@@ -1,12 +1,10 @@
 <script>
   import "smelte/src/tailwind.css" ;
-  import { Router, Link, Route } from "svelte-routing";
-  import Header from './components/Header.svelte'
-  import Footer from './components/Footer.svelte'
-  import Create from './components/Create.svelte'
-  import About from "./components/About.svelte";
-  import Diary from "./components/Diary.svelte";
-  import Home from "./components/Home.svelte";
+  import { Router, Route } from "svelte-routing";
+  import {Footer,Header} from './components/Layouts'
+  import {Create,About,Diary,Home} from './components/pages'
+  import './helpers/firebase'
+
 	export let url = '';
 </script>
 
@@ -15,7 +13,7 @@
   <section class="content">
     <Router url="{url}">
       <div>
-        <Route path="diary/:id" component="{Diary}" />
+        <Route path="diary/:id" let:params><Diary id={params.id}/></Route>
         <Route path="create" component="{Create}" />
         <Route path="about" component="{About}" />
         <Route path="/"><Home /></Route>
