@@ -1,14 +1,29 @@
 import { collection,query,where,getDoc,getDocs,orderBy,doc,Timestamp,setDoc,updateDoc } from "firebase/firestore";
-import {db} from './firebase'
+import {ref,uploadBytes,getDownloadURL} from 'firebase/storage'
+import {db,storage} from './firebase'
 import dayjs from "dayjs";
 
-export const postDiary = async (uid='',body='',rate=1) => {
+export const postDiary = async (uid='',body='',rate=1,image = null) => {
+  let uploadResult = ''
+  if(image) {
+    const storageRef = ref(storage)
+    const ext = image.name.split('.').pop()
+    const hashName = Math.random().toString(36).slice(-8)
+    const uploadRef = ref(storageRef,`/images/${hashName}.${ext}`)
+    await uploadBytes(uploadRef,image).then(async function (result ){
+      console.log (result)
+      await getDownloadURL(uploadRef).then(url => {
+        uploadResult = url
+      })
+    })
+  }
   const id = doc(collection(db,'diaries')).id //idを作成
   const diariesRef = doc(db,'diaries',id)
   const docRef = await setDoc(diariesRef, {
     uid: uid,
     body: body,
     rate:rate,
+    image:uploadResult,
     id:id,
     created_at:dayjs().format('YYYY-MM-DD HH:mm:ss')
     //created_at:Timestamp.now() firebase timestampを使う場合
@@ -38,14 +53,40 @@ export const updateDiary = async (id,rate,body) => {
 }
 
 //上記と同等
-export const updateDiaryV2 = async (id,rate,body) => {
+export const updateDiaryV2 = async (id,rate,body,image) => {
+  let uploadResult = ''
+  if(image) {
+    const storageRef = ref(storage)
+    const ext = image.name.split('.').pop()
+    const hashName = Math.random().toString(36).slice(-8)
+    const uploadRef = ref(storageRef,`/images/${hashName}.${ext}`)
+    await uploadBytes(uploadRef,image).then(async function (result ){
+      console.log (result)
+      await getDownloadURL(uploadRef).then(url => {
+        uploadResult = url
+      })
+    })
+  }
   const diariesRef = doc(db,'diaries',id)
-  const docRef = await updateDoc(diariesRef,{
-    id:id,
-    body: body,
-    rate:rate,
-    updated_at:dayjs().format('YYYY-MM-DD HH:mm:ss')
-  })
+  let updateDate;
+  if(image.name) {
+    updateDate = {
+      id:id,
+      body: body,
+      rate:rate,
+      image:uploadResult,
+      updated_at:dayjs().format('YYYY-MM-DD HH:mm:ss')
+    }
+  } else {
+    updateDate ={
+      id:id,
+      body: body,
+      rate:rate,
+      updated_at:dayjs().format('YYYY-MM-DD HH:mm:ss')
+    }
+
+  }
+  const docRef = await updateDoc(diariesRef,updateDate)
     .then(() => {
       return true
     })
@@ -67,6 +108,7 @@ export const fetchDiaries = async (uid="") => {
       id:doc.id,
       body:doc.data().body,
       rate:doc.data().rate,
+      image:doc.data().image,
       created_at : doc.data().created_at
     })
   })
