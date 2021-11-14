@@ -1,4 +1,4 @@
-import { collection,query,where,getDoc,getDocs,orderBy,doc,Timestamp,setDoc,updateDoc } from "firebase/firestore";
+import { collection,query,where,getDoc,getDocs,orderBy,doc,Timestamp,setDoc,updateDoc ,deleteDoc,limit} from "firebase/firestore";
 import {ref,uploadBytes,getDownloadURL} from 'firebase/storage'
 import {db,storage} from './firebase'
 import dayjs from "dayjs";
@@ -96,11 +96,25 @@ export const updateDiaryV2 = async (id,rate,body,image) => {
     })
 }
 
-export const fetchDiaries = async (uid="") => {
-  const diaries = query(
-    collection(db,'diaries'),
-    where('uid','==',uid),
-    orderBy('created_at','desc'))
+export const fetchDiaries = async (uid="", filterMonth=null) => {
+
+  let diaries
+  if(filterMonth) {
+    diaries = query(
+      collection(db,'diaries'),
+      where('uid','==',uid),
+      where('created_at','>=', filterMonth + '-01'),
+      where('created_at','<=', filterMonth + '-31'),
+      limit(31))
+  } else {
+    diaries = query(
+      collection(db,'diaries'),
+      where('uid','==',uid),
+      orderBy('created_at','desc'),
+      limit(31)
+    )
+  }
+
   const querySnapshot = await getDocs(diaries)
   const diaryData = []
   querySnapshot.forEach(doc => {
@@ -123,4 +137,10 @@ export const getDiary = async (id='') => {
   } else {
     return false
   }
+}
+
+export const deleteDiary = async (id) => {
+  if(!id) return false
+  await deleteDoc(doc(db,'diaries',id))
+  return true
 }

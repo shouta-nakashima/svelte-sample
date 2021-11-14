@@ -19,13 +19,13 @@
 {#if open}
   <nav class="bg-primary-900" on:click={() => open = false}>
     <Router>
-      <Link class="block" to="/">Home</Link>
-      <Link class="block" to="about">About</Link>
-      <Link class="block" to="create">Create</Link>
+      <Link class="block mb-3" to="/">Home</Link>
+      <Link class="block mb-3" to="about">日記の効果とは？</Link>
       {#if !uid}
-        <Link class="block" to="#" on:click={LoginWithGoogle}>Login</Link>
+        <Link class="block mb-3" to="#" on:click={LoginWithGoogle}>Login</Link>
       {:else }
-        <Link class="block" to="#" on:click={logout}>Logout</Link>
+        <Link class="block mb-3" to="create">日記を書く</Link>
+        <Link class="block mb-3" to="#" on:click={logout}>Logout</Link>
       {/if}
     </Router>
     <hr transition:scale={{ duration: 750, easing: quadOut, opacity: 1 }} />
