@@ -1,6 +1,6 @@
 <script>
   import {onMount} from 'svelte'
-  import { getDiary , updateDiary,updateDiaryV2 } from '../../helpers/api'
+  import { getDiary , updateDiary,updateDiaryV2 ,deleteDiary} from '../../helpers/api'
   import { Slider, TextField, Button,ProgressCircular } from "smelte";
   import dayjs from "dayjs";
   export let id
@@ -32,7 +32,17 @@
     render.onload = e => {
       preview = e.target.result
     }
+  }
 
+  const deleteHandle = async () => {
+    const result = await deleteDiary(id)
+    if(result) {
+      alert('日記の削除が完了しました。')
+      location.href = '/'
+    } else {
+      alert('日記の削除が出来ませんでした。')
+      location.href = '/'
+    }
   }
 </script>
 
@@ -53,4 +63,5 @@
     <TextField label="日記の本文" class="bg-white-900" bind:value={body} textarea rows="5" outlined />
     <Button type="submit" class="text-white-900">Button</Button>
   </form>
+  <Button class="bg-alert-900 text-white-900" on:click={deleteHandle}>日記を削除</Button>
 {/await}
